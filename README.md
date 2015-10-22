@@ -1,5 +1,5 @@
 # badjs-sourcemap
-> 发布 sourcemap 文件到指定服务器 [参考](https://github.com/BetterJS/badjs-sourcemap)
+> 发布 sourcemap 文件到指定服务器 [参考](https://github.com/BetterJS/badjs-sourcemap-server)
 
 ### 配置说明
 ```
