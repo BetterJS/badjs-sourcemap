@@ -5,22 +5,17 @@ var request = require('request');
 var archiver = require('archiver');
 var BufferHelper = require('bufferhelper');
 
-var get_match = function(match) {
-	if (Array.isArray(match)) {
-		return match.slice(0);
-	}
-	if (typeof match === 'string') {
-		return [match];
-	}
-	return ['**/*.map'];
+var format_match = function(match) {
+	return Array.isArray(match) ? match.slice(0) :
+		typeof match === 'string' ? [match] :
+		['**/*.map'];
 };
 
 // exports
-module.exports = function(config) {
-
+module.exports = function(config, callback) {
 	var options = {
 		src: {
-			src: get_match(config.match),
+			src: format_match(config.match),
 			cwd: config.from,
 			dest: config.to,
 			expand: true
@@ -29,13 +24,12 @@ module.exports = function(config) {
 	};
 
 	var archive = archiver('zip');
-
 	archive.on('error', function(err) {
 		throw err;
 	});
 
-	var output = new Stream;
 	var output_buffer = new BufferHelper();
+	var output = new Stream();
 	output.writable = true;
 	output.bytes = 0;
 
@@ -45,8 +39,8 @@ module.exports = function(config) {
 	};
 
 	output.end = function(buffer) {
-		buffer && output.write(buffer);
 		output.writable = false;
+		buffer && output.write(buffer);
 		var data = output_buffer.toBuffer(buffer);
 
 		request.post({
@@ -54,11 +48,10 @@ module.exports = function(config) {
 			formData: {
 				zip: data
 			}
-		}, function optionalCallback(err, httpResponse, body) {
-			if (err) {
-				return console.error('upload failed:', err);
-			}
-			console.log('Upload successful!  Server responded with:', body);
+		}, function(err, httpResponse, body) {
+			err ? console.error('Upload failed:', err) :
+				console.log('Upload successful! Server responded with:', body);
+			typeof callback === 'function' && callback(err, httpResponse, body);
 		});
 	};
 
