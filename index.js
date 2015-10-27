@@ -42,7 +42,7 @@ module.exports = function(config, callback) {
 		output.writable = false;
 		buffer && output.write(buffer);
 		var data = output_buffer.toBuffer(buffer);
-
+		console.log('Post data:', data.length);
 		request.post({
 			url: options.server,
 			formData: {
